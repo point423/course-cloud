@@ -1,0 +1,18 @@
+server:
+  port: 8081
+spring:
+  application:
+  name: catalog-service
+  datasource:
+  url: jdbc:mysql://localhost:3306/catalog_db?useSSL=false&serverTimezone=UTC
+  username: catalog_user
+  password: catalog_pass
+jpa:
+hibernate:
+ddl-auto: update
+show-sql: true
+
+logging:
+  level:
+    com.zjgsu.catalogservice: INFO
+    org.springframework.web: INFO
