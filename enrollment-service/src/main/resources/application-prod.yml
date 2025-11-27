@@ -11,8 +11,10 @@ spring:
 
 # 课程服务地址（Docker环境）
 catalog-service:
-  url: ${CATALOG_SERVICE_URL:http://catalog-service:8081}
+  url: ${CATALOG_SERVICE_URL:http://catalog-service:8082}
 
+user-service:
+  url: ${USER_SERVICE_URL:http://user-service:8081}
 logging:
   level:
     com.zjgsu.enrollmentservice: WARN

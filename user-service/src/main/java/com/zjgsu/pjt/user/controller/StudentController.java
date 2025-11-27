@@ -1,8 +1,8 @@
-package com.zjgsu.pjt.enrollment.controller;
+package com.zjgsu.pjt.user.controller;
 
-import com.zjgsu.pjt.enrollment.common.BusinessException;
-import com.zjgsu.pjt.enrollment.model.Student;
-import com.zjgsu.pjt.enrollment.service.StudentService;
+import com.zjgsu.pjt.user.common.BusinessException;
+import com.zjgsu.pjt.user.model.Student;
+import com.zjgsu.pjt.user.service.StudentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +39,11 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getStudentById(id));
     }
 
+    // 按学号查询学生
+    @GetMapping("/studentId/{studentId}")
+    public ResponseEntity<Student> getStudentByStudentId(@PathVariable String studentId) {
+        return ResponseEntity.ok(studentService.getStudentByStudentId(studentId));
+    }
     // 按专业筛选学生
     @GetMapping("/major/{major}")
     public ResponseEntity<List<Student>> getStudentsByMajor(@PathVariable String major) {

@@ -1,6 +1,6 @@
-package com.zjgsu.pjt.enrollment.repository;
+package com.zjgsu.pjt.user.repository;
 
-import com.zjgsu.pjt.enrollment.model.Student;
+import com.zjgsu.pjt.user.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

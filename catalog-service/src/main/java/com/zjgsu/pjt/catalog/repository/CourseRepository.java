@@ -1,6 +1,6 @@
-package com.zjgsu.pjt.enrollment.repository;
+package com.zjgsu.pjt.catalog.repository;
 
-import com.zjgsu.pjt.enrollment.model.Course;
+import com.zjgsu.pjt.catalog.model.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

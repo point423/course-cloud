@@ -1,4 +1,4 @@
-package com.zjgsu.pjt.catalog.config; // 替换为你的包名（如 zm 是张明的缩写）
+package com.zjgsu.pjt.user.config; // 替换为你的包名（如 zm 是张明的缩写）
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;

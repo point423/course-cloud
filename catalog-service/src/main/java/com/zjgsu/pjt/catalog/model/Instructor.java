@@ -1,4 +1,4 @@
-package com.zjgsu.pjt.enrollment.model;
+package com.zjgsu.pjt.catalog.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

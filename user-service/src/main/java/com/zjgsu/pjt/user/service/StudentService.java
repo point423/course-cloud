@@ -1,9 +1,8 @@
-package com.zjgsu.pjt.enrollment.service;
+package com.zjgsu.pjt.user.service;
 
-import com.zjgsu.pjt.enrollment.common.BusinessException;
-import com.zjgsu.pjt.enrollment.model.Student;
-import com.zjgsu.pjt.enrollment.repository.StudentRepository;
-
+import com.zjgsu.pjt.user.common.BusinessException;
+import com.zjgsu.pjt.user.model.Student;
+import com.zjgsu.pjt.user.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentService {
     private final StudentRepository studentRepository;
-    private final EnrollmentService enrollmentService;
 
 //    获取所有学生列表
 
@@ -49,6 +47,14 @@ public class StudentService {
     public Student getStudentById(String id) {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("学生不存在：ID=" + id, HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * 按学号查询学生
+     */
+    public Student getStudentByStudentId(String studentId) {
+        return studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new BusinessException("学生不存在：学号=" + studentId, HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -86,9 +92,9 @@ public class StudentService {
     public void deleteStudent(String id) {
         Student student = getStudentById(id);
         // 校验是否有关联选课记录
-        if (enrollmentService.hasEnrollmentsForStudent(id)) {
-            throw new BusinessException("该学生存在选课记录，无法删除", HttpStatus.CONFLICT);
-        }
+//        if (enrollmentService.hasEnrollmentsForStudent(id)) {
+//            throw new BusinessException("该学生存在选课记录，无法删除", HttpStatus.CONFLICT);
+//        }
         studentRepository.delete(student);
     }
 }

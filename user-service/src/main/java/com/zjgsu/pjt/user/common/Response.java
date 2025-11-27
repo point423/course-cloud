@@ -1,4 +1,4 @@
-package com.zjgsu.pjt.catalog.common;
+package com.zjgsu.pjt.user.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,6 +1,6 @@
 
 // ResourceNotFoundException.java（资源不存在异常）
-package com.zjgsu.pjt.catalog.common;
+package com.zjgsu.pjt.user.common;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String resource, String id) {

@@ -1,4 +1,4 @@
-package com.zjgsu.pjt.catalog.common;
+package com.zjgsu.pjt.user.common;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

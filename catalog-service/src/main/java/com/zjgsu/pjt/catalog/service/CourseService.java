@@ -1,8 +1,8 @@
-package com.zjgsu.pjt.enrollment.service;
+package com.zjgsu.pjt.catalog.service;
 
-import com.zjgsu.pjt.enrollment.common.BusinessException;
-import com.zjgsu.pjt.enrollment.model.Course;
-import com.zjgsu.pjt.enrollment.repository.CourseRepository;
+import com.zjgsu.pjt.catalog.common.BusinessException;
+import com.zjgsu.pjt.catalog.model.Course;
+import com.zjgsu.pjt.catalog.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

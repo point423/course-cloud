@@ -1,0 +1,19 @@
+server:
+  port: 8081
+spring:
+  application:
+  name: user-service
+  datasource:
+  url: jdbc:mysql://localhost:3306/user_db?useSSL=false&serverTimezone=UTC
+  username: user_user
+  password: user_pass
+jpa:
+hibernate:
+ddl-auto: update
+show-sql: true
+
+
+logging:
+  level:
+    com.zjgsu.userservice: INFO
+    org.springframework.web: INFO

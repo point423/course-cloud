@@ -1,5 +1,5 @@
 // BusinessException.java（业务异常，如重复选课、容量不足）
-package com.zjgsu.pjt.catalog.common;
+package com.zjgsu.pjt.user.common;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

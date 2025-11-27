@@ -4,9 +4,7 @@ import com.zjgsu.pjt.enrollment.common.BusinessException;
 import com.zjgsu.pjt.enrollment.common.ResourceNotFoundException;
 import com.zjgsu.pjt.enrollment.enums.EnrollmentStatus;
 import com.zjgsu.pjt.enrollment.model.Enrollment;
-import com.zjgsu.pjt.enrollment.model.Student;
 import com.zjgsu.pjt.enrollment.repository.EnrollmentRepository;
-import com.zjgsu.pjt.enrollment.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,12 +23,14 @@ import java.util.Map;
 public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
-    private final StudentRepository studentRepository;
     private final RestTemplate restTemplate; // 通过构造函数注入
 
     // 从 application.properties 或 application.yml 读取 catalog-service 的地址
     @Value("${catalog.service.url}")
     private String catalogServiceUrl;
+
+    @Value("${user.service.url}")
+    private String userServiceUrl;
 
     public List<Enrollment> getAllEnrollments() {
         return enrollmentRepository.findAll();
@@ -39,9 +39,7 @@ public class EnrollmentService {
     @Transactional
     public Enrollment enrollCourse(String courseId, String studentId) {
         // 1. 验证学生是否存在
-        studentRepository.findByStudentId(studentId) // 假设 studentId 是主键
-                .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
-
+        validateStudentExists(studentId);
         // 2. 调用课程目录服务获取课程信息，并检查课程是否存在
         Map<String, Object> courseData = getCourseData(courseId);
         Integer capacity = (Integer) courseData.get("capacity");
@@ -69,6 +67,17 @@ public class EnrollmentService {
         updateCourseEnrolledCount(courseId, enrolled + 1);
         return saved;
     }
+
+    private void validateStudentExists(String studentId) {
+        // **【已修复】** 使用新的、正确的端点来通过学号查询学生
+        String url = userServiceUrl + "/api/students/studentId/" + studentId;
+        try {
+            restTemplate.getForObject(url, Map.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new BusinessException("学生不存在: " + studentId, HttpStatus.NOT_FOUND);
+        }
+    }
+
 
     @Transactional
     public void dropCourse(String courseId, String studentId) {

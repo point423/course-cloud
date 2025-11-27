@@ -1,8 +1,8 @@
-package com.zjgsu.pjt.enrollment.controller;
+package com.zjgsu.pjt.catalog.controller;
 
-import com.zjgsu.pjt.enrollment.common.BusinessException;
-import com.zjgsu.pjt.enrollment.model.Course;
-import com.zjgsu.pjt.enrollment.service.CourseService;
+import com.zjgsu.pjt.catalog.common.BusinessException;
+import com.zjgsu.pjt.catalog.model.Course;
+import com.zjgsu.pjt.catalog.service.CourseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
