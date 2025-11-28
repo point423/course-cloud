@@ -25,12 +25,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final RestTemplate restTemplate; // 通过构造函数注入
 
-    // 从 application.properties 或 application.yml 读取 catalog-service 的地址
-    @Value("${catalog.service.url}")
-    private String catalogServiceUrl;
 
-    @Value("${user.service.url}")
-    private String userServiceUrl;
 
     public List<Enrollment> getAllEnrollments() {
         return enrollmentRepository.findAll();
@@ -69,10 +64,16 @@ public class EnrollmentService {
     }
 
     private void validateStudentExists(String studentId) {
-        // **【已修复】** 使用新的、正确的端点来通过学号查询学生
-        String url = userServiceUrl + "/api/students/studentId/" + studentId;
+        // 直接使用服务名 'user-service'
+        String url = "http://user-service/api/students/studentId/" + studentId; // <--- 修改点 1
         try {
-            restTemplate.getForObject(url, Map.class);
+            // 返回的已经是 Map 了
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response == null || response.isEmpty()) { // 做个健壮性检查
+                throw new BusinessException("学生不存在: " + studentId, HttpStatus.NOT_FOUND);
+            }
+            // 可以在这里打印一下端口号，来观察负载均衡
+            System.out.println("请求 User Service 成功，实例端口: " + response.get("port"));
         } catch (HttpClientErrorException.NotFound e) {
             throw new BusinessException("学生不存在: " + studentId, HttpStatus.NOT_FOUND);
         }
@@ -123,20 +124,27 @@ public class EnrollmentService {
     // --- 私有辅助方法，用于与 catalog-service 通信 ---
 
     private Map<String, Object> getCourseData(String courseId) {
-        String url = catalogServiceUrl + "/api/courses/" + courseId;
+       // 直接使用服务名 'catalog-service'
+        String url = "http://catalog-service/api/courses/" + courseId; // <--- 修改点 2
         try {
-            Map<String, Object> courseResponse = restTemplate.getForObject(url, Map.class);
-            // 收到404时，restTemplate会直接抛出异常，所以如果能走到这里，说明courseResponse一定不是null
-            return courseResponse; // <-- 直接返回收到的Map
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response == null) {
+                throw new ResourceNotFoundException("Course not found with id: " ,courseId);
+            }
+            // 可以在这里打印一下端口号
+            System.out.println("请求 Catalog Service 成功，实例端口: " + response.get("port"));
+
+            // 从返回的 Map 中提取原始的课程数据
+            return (Map<String, Object>) response.get("course"); // <--- 修改点 3
+
         } catch (HttpClientErrorException.NotFound e) {
-            // 如果catalog-service返回404，这里会捕捉到并转换为我们自己的异常
             throw new ResourceNotFoundException("Course not found with id: " ,courseId);
         }
     }
 
 
     private void updateCourseEnrolledCount(String courseId, int newCount) {
-        String url = catalogServiceUrl + "/api/courses/" + courseId + "/enroll"; // 假设更新人数的API是这个
+        String url = "http://catalog-service/api/courses/" + courseId + "/enroll"; // <--- 修改点 4
         Map<String, Integer> updateData = Map.of("enrolled", newCount);
         try {
             // 使用 PATCH 或 PUT 方法来更新资源

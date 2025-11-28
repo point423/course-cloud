@@ -60,7 +60,149 @@ Course Cloud 是基于单体校园选课系统拆分的微服务架构项目，�
 
 ---
 
-## 3. 技术栈
+## 3. 服务发现与Nacos
+
+为了实现服务的动态发现、负载均衡和统一配置管理，项目引入了 **Nacos** 作为服务注册与发现中心。
+
+### 3.1 Nacos 部署
+
+Nacos 通过 `docker-compose.yml` 文件与业务服务一同部署。配置要点如下：
+
+```yaml
+# docker-compose.yml (nacos服务部分)
+nacos:
+  image: nacos/nacos-server:v3.1.0
+  container_name: nacos-standalone
+  environment:
+    - MODE=standalone
+    - NACOS_AUTH_IDENTITY_KEY=serverIdentity
+    - NACOS_AUTH_IDENTITY_VALUE=serverIdentity
+    - NACOS_AUTH_ENABLE=true
+    - JAVA_OPT=-Xms256m -Xmx256m
+    - NACOS_AUTH_TOKEN=VGhpc0lzTXlTdXBlckxvbmdBbmRBYnNvbHV0ZWx5U2VjdXJlU2VjcmV0S2V5Rm9yTmFjb3NBdXRoMTIzNDU=
+  ports:
+    - "8848:8848" # API Port
+    - "8849:8080" # UI Port for Nacos 3.x
+    - "9848:9848" # Service Discovery Port
+  networks:
+    - course-network
+  healthcheck:
+    # 最终修正：直接检查UI界面是否就绪，简单可靠
+    test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+    interval: 15s
+    timeout: 10s
+    retries: 10
+    start_period: 120s
+```
+
+- **Nacos 控制台访问地址**: `http://localhost:8849`
+- **服务注册地址 (供微服务使用)**: `nacos:8848`
+
+### 3.2 微服务接入Nacos配置
+
+为了让每个微服务能够向 Nacos 注册自己，并发现其他服务，需要完成以下两步配置：
+
+#### 1. 添加Maven依赖
+
+在每个微服务（`user-service`, `catalog-service`, `enrollment-service`）的 `pom.xml` 文件中，必须添加以下两个核心依赖：
+
+```xml
+<!-- Nacos Service Discovery Starter -->
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+
+<!-- Spring Boot Actuator (用于健康检查) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+#### 2. 修改主启动类
+
+在每个微服务的主启动类（如 `UserServiceApplication.java`）上，必须添加 `@EnableDiscoveryClient` 注解来开启服务发现功能。
+
+```java
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
+@SpringBootApplication
+@EnableDiscoveryClient // <-- 开启服务发现
+public class UserServiceApplication {
+    // ...
+}
+```
+
+#### 3. 修改配置文件
+
+由于所有服务在Docker环境中都只加载 `application-prod.yml`，我们需要在该文件中指定 Nacos 服务器的地址。以 `user-service` 为例：
+
+```yaml
+# user-service/src/main/resources/application-prod.yml
+spring:
+  application:
+    name: user-service # 服务注册到Nacos时使用的服务名
+  # ...
+    cloud:
+    nacos:
+      discovery:
+        server-addr: nacos :8848
+        #        namespace: dev
+        #        group: COURSEHUB_GROUP
+        ephemeral: true
+        heart-beat-interval: 5000
+        heart-beat-timeout: 15000
+        username: nacos # 默认用户名
+        password: nacos # 默认密码
+        access-token: VGhpc0lzTXlTdXBlckxvbmdBbmRBYnNvbHV0ZWx5U2VjdXJlU2VjcmV0S2V5Rm9yTmFjb3NBdXRoMTIzNDU=
+
+# 暴露健康检查端点，以便Nacos监控服务状态
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+```
+
+### 3.3 服务调用方式变更
+
+引入Nacos后，服务间的调用不再使用硬编码的 IP 和端口，而是通过**服务名**进行调用。
+
+- **关键组件**: `RestTemplate` 需配合 `@LoadBalanced` 注解使用，以开启客户端负载均衡功能。
+
+```java
+// enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/config/RestTemplateConfig.java
+@Configuration
+public class RestTemplateConfig {
+    @Bean
+    @LoadBalanced // <-- 开启负载均衡魔法
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+```
+
+- **调用示例** (`enrollment-service` 调用 `user-service`)：
+
+```java
+// 硬编码方式 (已废弃)
+// String url = "http://localhost:8081/api/students/" + studentId;
+
+// 服务发现方式 (推荐)
+String url = "http://user-service/api/students/" + studentId;
+restTemplate.getForObject(url, ...);
+```
+
+`@LoadBalanced` 会自动拦截该请求，向 Nacos 查询 `user-service` 的所有健康实例地址，并根据负载均衡策略选择一个发起真正的网络请求。
+
+---
+
+## 4. 技术栈
+
 
 ### 3.1 核心技术栈
 | 类别 | 技术选型 | 版本要求 |
@@ -324,117 +466,6 @@ curl -X DELETE http://localhost:8083/api/enrollments/2024001/CS101
 ```
 
 ---
-
-## 7. 测试说明
-
-### 7.1 自动化测试脚本
-项目提供一键测试脚本 `test-services.sh`，覆盖核心业务场景：
-1. **user-service测试**：创建学生、按学号查询学生、验证学生不存在场景
-2. **catalog-service测试**：创建课程（含嵌套对象）、按课程代码查询课程、检查课程容量
-3. **enrollment-service测试**：
-    - 正常选课（验证学生/课程存在性、课程容量）
-    - 重复选课（返回错误）
-    - 学生/课程不存在选课（返回错误）
-    - 退课并验证课程选课人数更新
-
-运行方式：
-```bash
-# 赋予执行权限
-chmod +x test-services.sh
-
-# 运行测试（自动完成全流程验证）
-./test-services.sh
-```
-
-### 7.2 手动测试流程
-#### 步骤1：创建学生（user-service）
-```bash
-curl -X POST http://localhost:8081/api/students \
-  -H "Content-Type: application/json" \
-  -d '{
-    "studentId": "2024001",
-    "name": "张三",
-    "email": "zhangsan@example.com",
-    "major": "计算机科学",
-    "grade": 2024
-  }'
-```
-
-#### 步骤2：创建课程（catalog-service）
-```bash
-curl -X POST http://localhost:8082/api/courses \
-  -H "Content-Type: application/json" \
-  -d '{
-    "courseName": "数据结构",
-    "courseCode": "CS101",
-    "credits": 4,
-    "maxStudents": 100,
-    "instructor": {
-      "name": "李教授",
-      "email": "li@example.com",
-      "department": "计算机科学系"
-    },
-    "scheduleSlot": {
-      "dayOfWeek": "MONDAY",
-      "startTime": "08:00",
-      "endTime": "10:00",
-      "location": "教学楼A101"
-    }
-  }'
-```
-
-#### 步骤3：学生选课（enrollment-service，自动调用其他服务验证）
-```bash
-curl -X POST "http://localhost:8083/api/enrollments?studentId=2024001&courseCode=CS101"
-```
-
-#### 步骤4：验证结果
-```bash
-# 验证课程选课人数已更新
-curl http://localhost:8082/api/courses/CS101 | jq '.enrolled'
-
-# 验证学生选课记录存在
-curl http://localhost:8083/api/enrollments/student/2024001
-```
-
-### 7.3 数据库验证（可选）
-```bash
-# 连接 user 数据库（学生数据）
-docker exec -it user-db mysql -u user_user -puser_pass user_db
-SELECT * FROM students;  # 查看学生表
-
-# 连接 catalog 数据库（课程数据）
-docker exec -it catalog-db mysql -u catalog_user -pcatalog_pass catalog_db
-SELECT * FROM courses;  # 查看课程表
-
-# 连接 enrollment 数据库（选课数据）
-docker exec -it enrollment-db mysql -u enrollment_user -penrollment_pass enrollment_db
-SELECT * FROM enrollments; # 查看选课记录
-```
-
----
-
-## 8. 容器化部署说明
-
-### 8.1 Dockerfile 配置要点
-每个服务的Dockerfile基于`eclipse-temurin:25-jre`构建，示例（以user-service为例）：
-```dockerfile
-FROM eclipse-temurin:25-jre
-WORKDIR /app
-COPY target/user-service.jar app.jar
-EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-### 8.2 docker-compose.yml 核心配置
-- **自定义网络**: `course-network`（所有服务加入同一网络，支持服务名访问）
-- **数据卷持久化**: `user-data`/`catalog-data`/`enrollment-data`（数据库数据持久化）
-- **环境变量配置**: 数据库地址、服务地址通过环境变量注入（避免硬编码）
-- **服务依赖**: 微服务依赖数据库健康检查通过后启动
-- **数据库配置**: 字符集`utf8mb4`，健康检查`mysqladmin ping`
-
----
-
 ## 9. 项目结构
 
 ```
@@ -483,98 +514,3 @@ course-cloud-main/
 
 ---
 
-## 10. 常见问题与解决方案
-
-| 问题现象 | 解决方案 | 可能原因                    |
-|----------|----------|-------------------------|
-| `command not found: docker-compose` | 安装 Docker Compose V2，使用命令 `docker compose`（无横杠） | 使用了过时的 Docker Compose V1 |
-| `healthcheck must be a mapping` | 检查 YAML 文件缩进，确保 `environment`、`healthcheck` 等块层级正确 | docker-compose.yml 缩进错误 |
-| 编译失败：`找不到符号: 类 RestController` | 在类上添加 `import org.springframework.web.bind.annotation.RestController;` | 未导入Spring Web注解 |
-
-### 关键解决方案代码示例
-#### 1. RestTemplate 配置（enrollment-service）
-```java
-@Configuration
-public class RestTemplateConfig {
-    @Bean
-    public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        // 添加异常处理器（处理404等状态码）
-        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-            @Override
-            public void handleError(ClientHttpResponse response) throws IOException {
-                if (response.getRawStatusCode() != 404) {
-                    super.handleError(response);
-                }
-            }
-        });
-        return restTemplate;
-    }
-}
-```
-
-
-#### 2. Docker Compose服务地址配置（enrollment-service的application.yml）
-```yaml
-# 开发环境
-user-service:
-  url: http://localhost:8081
-catalog-service:
-  url: http://localhost:8082
-
-# Docker环境（通过环境变量覆盖）
-# user-service.url=http://user-service:8081
-# catalog-service.url=http://catalog-service:8082
-```
-
----
-
-## 11. 常见操作 FAQ
-
-### Q1: 如何查看服务日志？
-```bash
-# 查看所有服务日志
-docker compose logs
-
-# 查看特定服务日志（实时更新）
-docker compose logs -f user-service
-docker compose logs -f enrollment-service
-```
-
-### Q2: 如何重启单个服务？
-```bash
-# 重启用户服务
-docker compose restart user-service
-
-# 重启选课服务
-docker compose restart enrollment-service
-```
-
-### Q3: 如何修改服务端口？
-编辑 `docker-compose.yml`，修改 `ports` 映射配置：
-```yaml
-services:
-  user-service:
-    ports:
-      - "9081:8081"  # 本地端口:容器端口（修改本地端口即可）
-  catalog-service:
-    ports:
-      - "9082:8082"
-  enrollment-service:
-    ports:
-      - "9083:8083"
-```
-
-### Q4: 如何清空数据库数据？
-```bash
-# 停止服务并删除数据卷（彻底清空数据库）
-docker compose down -v
-
-# 重新启动（将创建全新数据库）
-docker compose up -d --build
-```
-
-### Q5: 如何本地调试服务？
-1. 停止 Docker 中的对应服务：`docker compose stop enrollment-service`
-2. 在 IDE 中修改application.yml，使用本地数据库地址
-3. 以调试模式启动服务，直接调用本地接口测试

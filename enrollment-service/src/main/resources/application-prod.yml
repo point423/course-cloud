@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: enrollment-service
   datasource:
     url: ${DB_URL:jdbc:mysql://enrollment-db:3306/enrollment_db?useSSL=false&serverTimezone=UTC}
     username: ${DB_USERNAME:enrollment_user}
@@ -9,12 +11,29 @@ spring:
       ddl-auto: update
     show-sql: false
 
-# 课程服务地址（Docker环境）
-catalog-service:
-  url: ${CATALOG_SERVICE_URL:http://catalog-service:8082}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+#        namespace: dev
+#        group: COURSEHUB_GROUP
+        ephemeral: true
+        heart-beat-interval: 5000
+        heart-beat-timeout: 15000
+        username: nacos # 默认用户名
+        password: nacos # 默认密码
+        access-token: VGhpc0lzTXlTdXBlckxvbmdBbmRBYnNvbHV0ZWx5U2VjdXJlU2VjcmV0S2V5Rm9yTmFjb3NBdXRoMTIzNDU=
 
-user-service:
-  url: ${USER_SERVICE_URL:http://user-service:8081}
 logging:
   level:
-    com.zjgsu.enrollmentservice: WARN
+    com.zjgsu.enrollmentservice: INFO
+    org.springframework.web: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always

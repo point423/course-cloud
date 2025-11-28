@@ -7,8 +7,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.springframework.core.env.Environment;
+
 
 /**
  * 学生管理API（RESTful）
@@ -19,6 +22,7 @@ import java.util.List;
 @Tag(name = "学生管理模块", description = "提供学生的创建、查询、更新、删除等操作，含学号唯一校验、邮箱格式校验")
 public class StudentController {
     private final StudentService studentService;
+    private final Environment environment;
 
     // 新增学生
     @PostMapping
@@ -39,10 +43,17 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getStudentById(id));
     }
 
-    // 按学号查询学生
+    // 按学号查询学生 (修改为返回Map)
     @GetMapping("/studentId/{studentId}")
-    public ResponseEntity<Student> getStudentByStudentId(@PathVariable String studentId) {
-        return ResponseEntity.ok(studentService.getStudentByStudentId(studentId));
+    public ResponseEntity<Map<String, Object>> getStudentByStudentId(@PathVariable String studentId) {
+        Student student = studentService.getStudentByStudentId(studentId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("student", student);
+        String port = environment.getProperty("local.server.port");
+        response.put("port", "user-service running on port: " + port);
+
+        return ResponseEntity.ok(response);
     }
     // 按专业筛选学生
     @GetMapping("/major/{major}")

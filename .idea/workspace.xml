@@ -1,50 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b37f362b-4d3a-41b5-a81d-b79e26f6e800" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/user-service/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/UserServiceApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/common/BusinessException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/common/GlobalExceptionHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/common/ResourceNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/common/Response.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/config/OpenApiConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/resources/application-prod.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/BusinessException.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/BusinessException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/ResourceNotFoundException.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/ResourceNotFoundException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/common/Response.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/config/OpenApiConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/config/OpenApiConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/markdown.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/config/RestTemplateConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/CatalogServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/CatalogServiceApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/controller/CourseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/controller/CourseController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/model/Course.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/model/Course.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/model/Instructor.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/model/Instructor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/model/Schedule.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/model/Schedule.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/repository/CourseRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/repository/CourseRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/service/CourseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/service/CourseService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/resources/application-prod.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enrollment-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/controller/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/controller/StudentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/model/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/model/Student.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/repository/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/repository/StudentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/enrollment-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/EnrollmentServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/EnrollmentServiceApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/service/EnrollmentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/service/EnrollmentService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/service/StudentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/service/StudentService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/resources/application-prod.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test-services.sh" beforeDir="false" afterPath="$PROJECT_DIR$/test-services.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/UserServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/UserServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/controller/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/controller/StudentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application-prod.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -80,22 +70,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/weifuwukaifa/course-cloud/user-service&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/ppt/java/course-cloud",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "MavenSettings"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\weifuwukaifa\course-cloud-three\enrollment-service\src\main\java\com\zjgsu\pjt\enrollment\config" />
       <recent name="D:\weifuwukaifa\course-cloud\user-service" />
       <recent name="D:\weifuwukaifa\course-cloud\course-cloud-main\enrollment-service" />
       <recent name="D:\weifuwukaifa\course-cloud\course-cloud-main\catalog-service" />
@@ -104,6 +99,17 @@
       <recent name="D:\weifuwukaifa\course-cloud\course-cloud-main" />
       <recent name="D:\weifuwukaifa\course-cloud" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
