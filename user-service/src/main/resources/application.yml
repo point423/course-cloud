@@ -34,5 +34,5 @@ management:
 
 logging:
   level:
-    com.zjgsu.userservice: INFO
+    com.zjgsu.pjt.user: INFO
     org.springframework.web: INFO

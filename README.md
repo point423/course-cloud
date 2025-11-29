@@ -1,21 +1,22 @@
 # 课程选择微服务项目 (Course Cloud)
 
-
 ## 1. 项目简介
 
 ### 1.1 项目概述
-Course Cloud 是基于单体校园选课系统拆分的微服务架构项目，将原应用拆分为**用户服务、课程目录服务、选课服务**三个独立微服务，实现服务解耦、独立部署和数据隔离。每个服务拥有专属数据库，选课服务通过HTTP调用实现跨服务通信验证，提升系统可扩展性与维护性。
+Course Cloud 是基于单体校园选课系统拆分的微服务架构项目，将原应用拆分为**用户服务、课程目录服务、选课服务**三个独立微服务，实现服务解耦、独立部署和数据隔离。每个服务拥有专属数据库，选课服务从原有的 `RestTemplate` 方式改为**OpenFeign**实现跨服务声明式通信，并集成 Resilience4j 实现熔断降级容错机制，同时支持多实例部署与客户端负载均衡，进一步提升系统的可用性、可扩展性与维护性。
 
 ### 1.2 微服务架构说明
-| 服务名称 | 端口 | 核心功能 | 数据库 |
-|----------|------|----------|--------|
-| **user-service**（用户服务） | 8081 | 学生信息增删改查，提供学生数据接口 | user_db (3306) |
-| **catalog-service**（课程目录服务） | 8082 | 课程信息增删改查（含讲师/排课嵌套对象），课程容量校验 | catalog_db (3307) |
-| **enrollment-service**（选课服务） | 8083 | 选课/退课管理，调用用户服务验证学生、调用课程服务验证课程及容量 | enrollment_db (3308) |
+| 服务名称 | 基础端口 | 核心功能 | 数据库 | 部署实例数 |
+|----------|----------|----------|--------|------------|
+| **user-service**（用户服务） | 8081 | 学生信息增删改查，提供学生数据接口 | user_db (3306) | 3个 |
+| **catalog-service**（课程目录服务） | 8082 | 课程信息增删改查（含讲师/排课嵌套对象），课程容量校验 | catalog_db (3307) | 3个 |
+| **enrollment-service**（选课服务） | 8083 | 选课/退课管理，调用用户服务验证学生、调用课程服务验证课程及容量 | enrollment_db (3308) | 1个 |
 
-#### 服务间通信特性
-- **通信方式**: RESTful HTTP（基于 RestTemplate）
+#### 服务间通信与容错特性
+- **通信方式**: 声明式HTTP调用（基于 **OpenFeign**），替代原 `RestTemplate` 方式
 - **依赖关系**: enrollment-service → user-service + catalog-service
+- **负载均衡**: 基于Nacos的客户端负载均衡，自动分发请求至多实例
+- **容错机制**: Resilience4j熔断器（失败率阈值50%，滑动窗口10次）+ Fallback降级处理
 - **数据隔离**: 各服务独立数据库，禁止跨服务直接访问数据库
 - **核心交互**: 选课操作需验证学生存在性、课程存在性及容量，退课操作需同步更新课程选课人数
 
@@ -28,41 +29,62 @@ Course Cloud 是基于单体校园选课系统拆分的微服务架构项目，�
 │   客户端    │
 └──────┬──────┘
        │
-       ├───────────────┐      ┌─────────────┐
-       │               ▼      │             │
-       │  ┌─────────────────────┐     ┌─────────────┐
-       │  │ user-service        │────▶│ user_db     │
-       │  │ (8081)              │     │ (3306)      │
-       │  │ - 学生CRUD          │     └─────────────┘
-       │  └─────────────────────┘
-       │
-       ├───────────────┐
-       │               ▼
-       │  ┌─────────────────────┐     ┌─────────────┐
-       │  │ catalog-service     │────▶│ catalog_db  │
-       │  │ (8082)              │     │ (3307)      │
-       │  │ - 课程CRUD          │     └─────────────┘
-       │  │ - 讲师/排课嵌套处理 │
-       │  │ - 课程容量校验      │
-       │  └─────────────────────┘
-       │
-       └───────────────┐
-                       ▼
-              ┌─────────────────────┐     ┌─────────────┐
-              │ enrollment-service  │────▶│ enrollment_ │
-              │ (8083)              │     │ db (3308)   │
-              │ - 选课/退课管理     │     └─────────────┘
-              │ - 学生验证(HTTP调用)│
-              │ - 课程验证(HTTP调用)│
-              │ - 重复选课校验      │
-              └─────────────────────┘
+       │  负载均衡请求分发
+       │  (OpenFeign + Nacos)
+       ▼
+┌─────────────────────┐
+│ enrollment-service  │ (8083, 1实例)
+│ - 选课/退课管理     │
+│ - OpenFeign调用     │
+│ - 熔断降级处理      │
+└─────────┬───────────┘
+          │
+          ├─────────────────────────────────┬─────────────────────────────────┐
+          │                                 │                                 │
+          ▼                                 ▼                                 ▼
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ user-service-1      │     │ user-service-2      │     │ user-service-3      │
+│ (8081)              │     │ (8081)              │     │ (8081)              │
+└─────────┬───────────┘     └─────────┬───────────┘     └─────────┬───────────┘
+          │                           │                           │
+          └───────────────────────────┼───────────────────────────┘
+                                      ▼
+                             ┌─────────────┐
+                             │ user_db     │
+                             │ (3306)      │
+                             └─────────────┘
+          │
+          ├─────────────────────────────────┬─────────────────────────────────┐
+          │                                 │                                 │
+          ▼                                 ▼                                 ▼
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ catalog-service-1   │     │ catalog-service-2   │     │ catalog-service-3   │
+│ (8082)              │     │ (8082)              │     │ (8082)              │
+└─────────┬───────────┘     └─────────┬───────────┘     └─────────┬───────────┘
+          │                           │                           │
+          └───────────────────────────┼───────────────────────────┘
+                                      ▼
+                             ┌─────────────┐
+                             │ catalog_db  │
+                             │ (3307)      │
+                             └─────────────┘
+          │
+          ▼
+┌─────────────┐
+│ enrollment_ │
+│ db (3308)   │
+└─────────────┘
+┌─────────────┐
+│ Nacos       │ (服务注册/发现)
+│ (8848/8849) │
+└─────────────┘
 ```
 
 ---
 
 ## 3. 服务发现与Nacos
 
-为了实现服务的动态发现、负载均衡和统一配置管理，项目引入了 **Nacos** 作为服务注册与发现中心。
+为了实现服务的动态发现、负载均衡和统一配置管理，项目引入了 **Nacos** 作为服务注册与发现中心，并基于Nacos实现OpenFeign的客户端负载均衡。
 
 ### 3.1 Nacos 部署
 
@@ -87,7 +109,6 @@ nacos:
   networks:
     - course-network
   healthcheck:
-    # 最终修正：直接检查UI界面是否就绪，简单可靠
     test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
     interval: 15s
     timeout: 10s
@@ -122,39 +143,39 @@ nacos:
 
 #### 2. 修改主启动类
 
-在每个微服务的主启动类（如 `UserServiceApplication.java`）上，必须添加 `@EnableDiscoveryClient` 注解来开启服务发现功能。
+在每个微服务的主启动类上，添加 `@EnableDiscoveryClient` 注解开启服务发现功能；**enrollment-service** 需额外添加 `@EnableFeignClients` 注解启用OpenFeign客户端。
 
 ```java
+// enrollment-service 主启动类示例
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableDiscoveryClient // <-- 开启服务发现
-public class UserServiceApplication {
+@EnableDiscoveryClient
+@EnableFeignClients // 启用OpenFeign客户端
+public class EnrollmentServiceApplication {
     // ...
 }
 ```
 
 #### 3. 修改配置文件
 
-由于所有服务在Docker环境中都只加载 `application-prod.yml`，我们需要在该文件中指定 Nacos 服务器的地址。以 `user-service` 为例：
+由于所有服务在Docker环境中都只加载 `application-prod.yml`，需在该文件中指定 Nacos 服务器地址。以 `user-service` 为例：
 
 ```yaml
 # user-service/src/main/resources/application-prod.yml
 spring:
   application:
     name: user-service # 服务注册到Nacos时使用的服务名
-  # ...
-    cloud:
+  cloud:
     nacos:
       discovery:
-        server-addr: nacos :8848
-        #        namespace: dev
-        #        group: COURSEHUB_GROUP
+        server-addr: nacos:8848
         ephemeral: true
         heart-beat-interval: 5000
         heart-beat-timeout: 15000
-        username: nacos # 默认用户名
-        password: nacos # 默认密码
+        username: nacos
+        password: nacos
         access-token: VGhpc0lzTXlTdXBlckxvbmdBbmRBYnNvbHV0ZWx5U2VjdXJlU2VjcmV0S2V5Rm9yTmFjb3NBdXRoMTIzNDU=
 
 # 暴露健康检查端点，以便Nacos监控服务状态
@@ -168,43 +189,107 @@ management:
       show-details: always
 ```
 
-### 3.3 服务调用方式变更
+---
 
-引入Nacos后，服务间的调用不再使用硬编码的 IP 和端口，而是通过**服务名**进行调用。
+## 4. 服务间通信与负载均衡
 
-- **关键组件**: `RestTemplate` 需配合 `@LoadBalanced` 注解使用，以开启客户端负载均衡功能。
+### 4.1 OpenFeign 集成
+enrollment-service 已替换原 `RestTemplate` 为 **OpenFeign** 实现声明式服务调用，通过定义Feign Client接口简化跨服务通信，核心配置如下：
 
+#### 1. 添加Maven依赖
+在 `enrollment-service/pom.xml` 中添加OpenFeign与Resilience4j依赖：
+```xml
+<!-- OpenFeign -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+<!-- Resilience4j 熔断器 -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+</dependency>
+```
+
+#### 2. 定义Feign Client接口
+在enrollment-service中创建`UserClient`和`CatalogClient`，以`UserClient`为例：
 ```java
-// enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/config/RestTemplateConfig.java
-@Configuration
-public class RestTemplateConfig {
-    @Bean
-    @LoadBalanced // <-- 开启负载均衡魔法
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+@FeignClient(name = "user-service", fallback = UserClientFallback.class)
+public interface UserClient {
+    @GetMapping("/api/users/students/{id}")
+    StudentDto getStudent(@PathVariable Long id);
+}
+```
+
+#### 3. 配置文件
+在`enrollment-service/application.yml`中配置OpenFeign与熔断器参数：
+```yaml
+# OpenFeign 配置
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 3000 # 连接超时3秒
+        readTimeout: 5000    # 读取超时5秒
+  circuitbreaker:
+    enabled: true # 启用熔断器
+
+# Resilience4j 熔断器配置
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        failureRateThreshold: 50 # 失败率阈值50%
+        slidingWindowSize: 10    # 滑动窗口10次
+      catalog-service:
+        failureRateThreshold: 50
+        slidingWindowSize: 10
+```
+
+### 4.2 Fallback 降级处理
+为每个Feign Client实现降级处理类，服务不可用时触发容错逻辑，以`UserClientFallback`为例：
+```java
+@Slf4j
+@Component
+public class UserClientFallback implements UserClient {
+    @Override
+    public StudentDto getStudent(Long id) {
+        log.warn("UserClient fallback triggered for student: {}", id);
+        throw new ServiceUnavailableException("用户服务暂时不可用，请稍后再试");
     }
 }
 ```
 
-- **调用示例** (`enrollment-service` 调用 `user-service`)：
+### 4.3 多实例部署
+通过Docker Compose配置，实现`user-service`和`catalog-service`各3个实例的部署，关键配置要点：
+- 每个实例使用唯一`container_name`（如`user-service-1`/`user-service-2`/`user-service-3`）
+- 所有实例使用相同镜像和端口，通过Docker网络实现通信
+- 所有服务注册至同一Nacos节点，支持负载均衡
 
-```java
-// 硬编码方式 (已废弃)
-// String url = "http://localhost:8081/api/students/" + studentId;
+### 4.4 负载均衡验证
+1. 在各服务Controller中注入端口号并打印日志，标识处理请求的实例：
+   ```java
+   @Value("${server.port}")
+   private String port;
 
-// 服务发现方式 (推荐)
-String url = "http://user-service/api/students/" + studentId;
-restTemplate.getForObject(url, ...);
-```
+   @GetMapping("/api/students/{id}")
+   public StudentDto getStudent(@PathVariable Long id) {
+       log.info("处理请求的实例端口: {}", port);
+       // 业务逻辑...
+   }
+   ```
+2. 连续发送选课请求，通过日志观察请求被分发至不同实例。
 
-`@LoadBalanced` 会自动拦截该请求，向 Nacos 查询 `user-service` 的所有健康实例地址，并根据负载均衡策略选择一个发起真正的网络请求。
+### 4.5 熔断降级测试
+1. 停止所有`user-service`实例：`docker compose stop user-service-1 user-service-2 user-service-3`
+2. 发送选课请求，观察日志中Fallback逻辑触发
+3. 重启服务：`docker compose start user-service-1 user-service-2 user-service-3`，验证服务恢复正常
 
 ---
 
-## 4. 技术栈
+## 5. 技术栈
 
-
-### 3.1 核心技术栈
+### 5.1 核心技术栈
 | 类别 | 技术选型 | 版本要求 |
 |------|----------|----------|
 | 后端框架 | Spring Boot | 3.2.6 |
@@ -214,9 +299,12 @@ restTemplate.getForObject(url, ...);
 | 连接池 | HikariCP | 随Spring Boot版本 |
 | 容器化 | Docker + Docker Compose | Docker 20.10+ / Compose 2.0+ |
 | 构建工具 | Maven | 3.8+ |
-| 服务通信 | RestTemplate | 随Spring Boot版本 |
+| 服务注册与发现 | Nacos | v3.1.0 |
+| 服务间通信 | Spring Cloud OpenFeign | 随Spring Cloud版本 |
+| 容错机制 | Resilience4j CircuitBreaker | 随Spring Cloud版本 |
+| 负载均衡 | Spring Cloud LoadBalancer | 随Spring Cloud版本 |
 
-### 3.2 辅助依赖
+### 5.2 辅助依赖
 - **Lombok**: 1.18.32（简化实体类代码）
 - **SpringDoc OpenAPI**: 2.3.0（自动生成API文档）
 - **Jakarta Validation**: 参数校验
@@ -224,20 +312,20 @@ restTemplate.getForObject(url, ...);
 
 ---
 
-## 4. 环境要求
+## 6. 环境要求
 
-### 4.1 必需软件
+### 6.1 必需软件
 - JDK 21 或更高版本
 - Maven 3.8+
 - Docker 20.10+
 - Docker Compose 2.0+（使用 `docker compose` 命令，非 `docker-compose`）
 
-### 4.2 推荐配置
-- 内存：至少 4GB RAM
+### 6.2 推荐配置
+- 内存：至少 4GB RAM（多实例部署建议8GB+）
 - 磁盘：至少 2GB 可用空间
 - 操作系统：Linux / macOS / Windows (需安装 WSL2)
 
-### 4.3 环境验证
+### 6.3 环境验证
 ```bash
 # 检查 Java 版本（需显示 21+）
 java -version
@@ -254,15 +342,15 @@ docker compose version
 
 ---
 
-## 5. 构建和运行步骤
+## 7. 构建和运行步骤
 
-### 5.1 克隆项目
+### 7.1 克隆项目
 ```bash
 git clone <repository-url>
-cd course-cloud-three
+cd course-cloud
 ```
 
-### 5.2 构建项目
+### 7.2 构建项目
 在项目根目录执行 Maven 打包命令（跳过测试以加快构建）：
 ```bash
 # 清理并打包所有服务
@@ -274,33 +362,33 @@ mvn clean package -DskipTests
 - catalog-service: `catalog-service/target/catalog-service.jar`
 - enrollment-service: `enrollment-service/target/enrollment-service.jar`
 
-### 5.3 启动服务
-使用 Docker Compose 一键启动所有服务（包含3个数据库+3个微服务）：
+### 7.3 启动多实例服务
+使用 Docker Compose 一键启动所有服务（含Nacos+3个数据库+多实例微服务）：
 ```bash
-# 构建镜像并后台启动所有服务（自定义网络+数据卷持久化）
+# 构建镜像并后台启动所有服务（含多实例配置）
 docker compose up -d --build
 
-# 查看服务运行状态（需6个服务全部正常）
+# 查看服务运行状态（需Nacos+3个数据库+1个enrollment+3个user+3个catalog，共11个服务）
 docker compose ps
 
 # 实时查看所有服务日志
 docker compose logs -f
 ```
 
-### 5.4 等待服务启动完成
-服务启动需 30-60 秒（数据库初始化 + 应用启动），可通过日志验证：
+### 7.4 等待服务启动完成
+服务启动需 60-90 秒（Nacos初始化+多实例注册+数据库初始化），可通过日志验证：
 ```bash
-# 验证 user-service 启动成功
-docker compose logs user-service | grep "Started UserServiceApplication"
+# 验证 Nacos 启动成功
+docker compose logs nacos | grep "Nacos started successfully"
 
-# 验证 catalog-service 启动成功
-docker compose logs catalog-service | grep "Started CatalogServiceApplication"
+# 验证 user-service 多实例启动成功
+docker compose logs user-service-1 | grep "Started UserServiceApplication"
 
 # 验证 enrollment-service 启动成功
 docker compose logs enrollment-service | grep "Started EnrollmentServiceApplication"
 ```
 
-### 5.5 服务可用性验证
+### 7.5 服务可用性验证
 ```bash
 # 测试 user-service（应返回学生列表，初始为空数组）
 curl http://localhost:8081/api/students
@@ -312,7 +400,22 @@ curl http://localhost:8082/api/courses
 curl http://localhost:8083/api/enrollments
 ```
 
-### 5.6 停止服务
+### 7.6 负载均衡与熔断测试
+```bash
+# 1. 负载均衡测试：连续发送选课请求，观察多实例日志
+for i in {1..10}; do curl -X POST "http://localhost:8083/api/enrollments?studentId=2024001&courseCode=CS101"; done
+
+# 2. 熔断降级测试：停止所有user-service实例
+docker compose stop user-service-1 user-service-2 user-service-3
+
+# 3. 发送请求触发Fallback
+curl http://localhost:8083/api/enrollments?studentId=2024001&courseCode=CS101
+
+# 4. 重启user-service实例，验证服务恢复
+docker compose start user-service-1 user-service-2 user-service-3
+```
+
+### 7.7 停止服务
 ```bash
 # 停止所有服务（保留数据卷，数据库数据不丢失）
 docker compose down
@@ -323,16 +426,16 @@ docker compose down -v
 
 ---
 
-## 6. API 文档
+## 8. API 文档
 
-### 6.1 在线文档访问
+### 8.1 在线文档访问
 | 服务名称 | 访问地址 | 说明 |
 |----------|----------|------|
 | user-service | http://localhost:8081/swagger-ui.html | 学生管理API文档 |
 | catalog-service | http://localhost:8082/swagger-ui.html | 课程管理API文档 |
 | enrollment-service | http://localhost:8083/swagger-ui.html | 选课管理API文档 |
 
-### 6.2 User Service (端口: 8081)
+### 8.2 User Service (基础端口: 8081)
 #### 学生管理接口
 | 方法 | 路径 | 描述 | 请求体 | 响应 |
 |------|------|------|--------|------|
@@ -371,7 +474,7 @@ curl -X POST http://localhost:8081/api/students \
 curl http://localhost:8081/api/students/2024001
 ```
 
-### 6.3 Catalog Service (端口: 8082)
+### 8.3 Catalog Service (基础端口: 8082)
 #### 课程管理接口
 | 方法 | 路径 | 描述 | 请求体 | 响应 |
 |------|------|------|--------|------|
@@ -432,7 +535,7 @@ curl -X POST http://localhost:8082/api/courses \
 curl http://localhost:8082/api/courses/CS101
 ```
 
-### 6.4 Enrollment Service (端口: 8083)
+### 8.4 Enrollment Service (端口: 8083)
 #### 选课管理接口
 | 方法 | 路径 | 描述 | 请求参数/体 | 响应 |
 |------|------|------|-------------|------|
@@ -466,51 +569,48 @@ curl -X DELETE http://localhost:8083/api/enrollments/2024001/CS101
 ```
 
 ---
+
 ## 9. 项目结构
 
 ```
-course-cloud-main/
-├── user-service/             # 用户服务
-│   ├── src/main/java/com/zjgsu/pjt/user/
-│   │   ├── controller/       # 接口层（学生相关API）
-│   │   ├── service/          # 业务逻辑层
-│   │   ├── repository/       # 数据访问层（JPA）
-│   │   ├── model/            # 实体类（Student）
-│   │   ├── common/           # 异常处理
-│   │   └── UserServiceApplication.java  # 应用入口
-│   ├── src/main/resources/application.yml  # 配置文件（端口8081，数据库user_db）
-│   ├── Dockerfile            # 容器构建文件
-│   └── pom.xml               # 服务依赖配置
+course-cloud/
+├── services/
+│   ├── enrollment-service/       # 选课服务
+│   │   ├── src/main/java/com/zjgsu/coursecloud/enrollment/
+│   │   │   ├── client/           # Feign Client接口及降级类
+│   │   │   │   ├── UserClient.java
+│   │   │   │   ├── UserClientFallback.java
+│   │   │   │   ├── CatalogClient.java
+│   │   │   │   └── CatalogClientFallback.java
+│   │   │   ├── controller/       # 接口层（选课相关API）
+│   │   │   ├── service/          # 业务逻辑层（含OpenFeign调用）
+│   │   │   ├── repository/       # 数据访问层（JPA）
+│   │   │   ├── model/            # 实体类（Enrollment）
+│   │   │   ├── dto/              # 数据传输对象（StudentDto/CourseDto）
+│   │   │   ├── common/           # 异常处理
+│   │   │   └── EnrollmentServiceApplication.java  # 应用入口
+│   │   │── src/main/resources/
+│   │   │   ├── application.yml   # 配置文件（OpenFeign/熔断器配置）
+│   │   │   └── application-prod.yml
+│   │   ├── Dockerfile            # 容器构建文件
+│   │   └── pom.xml               # 服务依赖配置（OpenFeign/Resilience4j）
+│   │
+│   ├── user-service/             # 用户服务（3实例部署）
+│   │   ├── src/main/java/com/zjgsu/coursecloud/user/
+│   │   ├── src/main/resources/
+│   │   ├── Dockerfile
+│   │   └── pom.xml
+│   │
+│   ├── catalog-service/          # 课程目录服务（3实例部署）
+│   │   ├── src/main/java/com/zjgsu/coursecloud/catalog/
+│   │   ├── src/main/resources/
+│   │   ├── Dockerfile
+│   │   └── pom.xml
 │
-├── catalog-service/          # 课程目录服务
-│   ├── src/main/java/com/zjgsu/pjt/catalog/
-│   │   ├── controller/       # 接口层（课程相关API）
-│   │   ├── service/          # 业务逻辑层
-│   │   ├── repository/       # 数据访问层（JPA）
-│   │   ├── model/            # 实体类（Course、Instructor、ScheduleSlot）
-│   │   ├── common/           # 异常处理
-│   │   └── CatalogServiceApplication.java  # 应用入口
-│   ├── src/main/resources/application.yml  # 配置文件（端口8082，数据库catalog_db）
-│   ├── Dockerfile            # 容器构建文件
-│   └── pom.xml               # 服务依赖配置
-│
-├── enrollment-service/       # 选课服务
-│   ├── src/main/java/com/zjgsu/pjt/enrollment/
-│   │   ├── controller/       # 接口层（选课相关API）
-│   │   ├── service/          # 业务逻辑层（含RestTemplate调用）
-│   │   ├── repository/       # 数据访问层（JPA）
-│   │   ├── model/            # 实体类（Enrollment）
-│   │   ├── config/           # RestTemplate配置
-│   │   ├── common/           # 异常处理
-│   │   └── EnrollmentServiceApplication.java  # 应用入口
-│   ├── src/main/resources/application.yml  # 配置文件（端口8083，服务地址配置）
-│   ├── Dockerfile            # 容器构建文件
-│   └── pom.xml               # 服务依赖配置
-│
-├── docker-compose.yml        # 多服务编排配置（3个数据库+3个微服务）
-├── test-services.sh          # 自动化测试脚本
-└── README.md                 # 项目文档（本文档）
+├── docker-compose.yml            # 多服务编排配置（Nacos+多实例微服务）
+│---test-balance.sh      # 负载均衡测试脚本
+├── test-services.sh              # 自动化测试脚本
+└── README.md                     # 项目文档
 ```
 
 ---
-

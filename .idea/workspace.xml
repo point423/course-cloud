@@ -5,26 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b37f362b-4d3a-41b5-a81d-b79e26f6e800" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/markdown.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/config/RestTemplateConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/client/CatalogClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/client/CatalogClientFallback.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/client/UserClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/client/UserClientFallback.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/dto/CourseDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/dto/StudentDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-banlance.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/CatalogServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/CatalogServiceApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/controller/CourseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/java/com/zjgsu/pjt/catalog/controller/CourseController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog-service/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/resources/application-prod.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/catalog-service/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/EnrollmentServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/EnrollmentServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/config/RestTemplateConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/config/RestTemplateConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/service/EnrollmentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/java/com/zjgsu/pjt/enrollment/service/EnrollmentService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/resources/application-prod.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/enrollment-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/enrollment-service/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test-services.sh" beforeDir="false" afterPath="$PROJECT_DIR$/test-services.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/UserServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/UserServiceApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/controller/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/zjgsu/pjt/user/controller/StudentController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application-prod.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
@@ -66,28 +66,31 @@
   &quot;associatedIndex&quot;: 5
 }</component>
   <component name="ProjectId" id="35gUYDP4TyF60kw4KKOlNOHr8cB" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/ppt/java/course-cloud",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "MavenSettings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/ppt/java/course-cloud&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\weifuwukaifa\course-cloud-three\enrollment-service\src\main\java\com\zjgsu\pjt\enrollment\config" />

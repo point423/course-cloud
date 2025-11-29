@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpStatus;
-
-
+import com.zjgsu.pjt.enrollment.client.CatalogClient;
+import com.zjgsu.pjt.enrollment.client.UserClient;
+import com.zjgsu.pjt.enrollment.dto.CourseDto;
+import com.zjgsu.pjt.enrollment.dto.StudentDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +25,9 @@ import java.util.Map;
 public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
-    private final RestTemplate restTemplate; // 通过构造函数注入
+    // 不再需要 RestTemplate，注入我们新的 Feign Clients
+    private final UserClient userClient;
+    private final CatalogClient catalogClient;
 
 
 
@@ -64,18 +68,14 @@ public class EnrollmentService {
     }
 
     private void validateStudentExists(String studentId) {
-        // 直接使用服务名 'user-service'
-        String url = "http://user-service/api/students/studentId/" + studentId; // <--- 修改点 1
         try {
-            // 返回的已经是 Map 了
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            if (response == null || response.isEmpty()) { // 做个健壮性检查
-                throw new BusinessException("学生不存在: " + studentId, HttpStatus.NOT_FOUND);
-            }
-            // 可以在这里打印一下端口号，来观察负载均衡
-            System.out.println("请求 User Service 成功，实例端口: " + response.get("port"));
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new BusinessException("学生不存在: " + studentId, HttpStatus.NOT_FOUND);
+            // 直接调用，非常清爽！
+            StudentDto studentDto = userClient.getStudentByStudentId(studentId);
+            System.out.println("请求 User Service 成功, 实例端口: " + studentDto.getPort());
+        } catch (Exception e) {
+            // 如果 Feign Client 内部或 Fallback 抛出异常，这里会捕获
+            // 为了保持和之前一样的业务逻辑，我们可以在这里将它包装成 BusinessException
+            throw new BusinessException("验证学生失败: " + e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -124,34 +124,20 @@ public class EnrollmentService {
     // --- 私有辅助方法，用于与 catalog-service 通信 ---
 
     private Map<String, Object> getCourseData(String courseId) {
-       // 直接使用服务名 'catalog-service'
-        String url = "http://catalog-service/api/courses/" + courseId; // <--- 修改点 2
         try {
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            if (response == null) {
-                throw new ResourceNotFoundException("Course not found with id: " ,courseId);
-            }
-            // 可以在这里打印一下端口号
-            System.out.println("请求 Catalog Service 成功，实例端口: " + response.get("port"));
-
-            // 从返回的 Map 中提取原始的课程数据
-            return (Map<String, Object>) response.get("course"); // <--- 修改点 3
-
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException("Course not found with id: " ,courseId);
+            CourseDto courseDto = catalogClient.getCourseById(courseId);
+            System.out.println("请求 Catalog Service 成功, 实例端口: " + courseDto.getPort());
+            return courseDto.getCourse();
+        } catch (Exception e) {
+            throw new BusinessException("获取课程失败: " + e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
 
     private void updateCourseEnrolledCount(String courseId, int newCount) {
-        String url = "http://catalog-service/api/courses/" + courseId + "/enroll"; // <--- 修改点 4
-        Map<String, Integer> updateData = Map.of("enrolled", newCount);
-        try {
-            // 使用 PATCH 或 PUT 方法来更新资源
-            restTemplate.patchForObject(url, updateData, Void.class);
-        } catch (Exception e) {
-            // 在生产环境中，这里应该使用更健壮的日志记录，并考虑失败重试或补偿事务
-            System.err.println("Failed to update course enrolled count for course " + courseId + ": " + e.getMessage());
-        }
+       // 注意：我们新的Feign Client里没有更新具体数字的方法
+        // 之前的逻辑是调用一个接口让课程的 enrolledCount +1
+        // 所以这里我们直接调用那个方法即可
+        catalogClient.incrementEnrolledCount(courseId);
     }
 }

@@ -100,18 +100,65 @@ services:
       retries: 5
 
   # 课程目录服务
-  catalog-service:
+  catalog-service-1:
     build:
       context: ./catalog-service
       dockerfile: Dockerfile
-    container_name: catalog-service
+    container_name: catalog-service-1
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:mysql://catalog-db:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USERNAME: catalog_user
       DB_PASSWORD: catalog_pass
+      SERVER_PORT: 8082 # 容器内端口固定
     ports:
-      - "8082:8082"
+      - "8090:8082"
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy # 依赖Nacos健康启动
+    networks:
+      - course-network
+    restart: unless-stopped
+
+  # 课程目录服务
+  catalog-service-2:
+    build:
+      context: ./catalog-service
+      dockerfile: Dockerfile
+    container_name: catalog-service-2
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://catalog-db:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: catalog_user
+      DB_PASSWORD: catalog_pass
+      SERVER_PORT: 8082 # 容器内端口固定
+    ports:
+      - "8091:8082"
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy # 依赖Nacos健康启动
+    networks:
+      - course-network
+    restart: unless-stopped
+
+  # 课程目录服务
+  catalog-service-3:
+    build:
+      context: ./catalog-service
+      dockerfile: Dockerfile
+    container_name: catalog-service-3
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://catalog-db:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: catalog_user
+      DB_PASSWORD: catalog_pass
+      SERVER_PORT: 8082 # 容器内端口固定
+    ports:
+      - "8092:8082"
     depends_on:
       catalog-db:
         condition: service_healthy
@@ -155,9 +202,9 @@ services:
       DB_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USERNAME: user_user
       DB_PASSWORD: user_pass
-      SERVER_PORT: 8085
+      SERVER_PORT: 8084
     ports:
-      - "8085:8085"
+      - "8085:8084"
     depends_on:
       user-db:
         condition: service_healthy
@@ -178,9 +225,9 @@ services:
       DB_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USERNAME: user_user
       DB_PASSWORD: user_pass
-      SERVER_PORT: 8086
+      SERVER_PORT: 8084
     ports:
-      - "8086:8086"
+      - "8086:8084"
     depends_on:
       user-db:
         condition: service_healthy
@@ -212,7 +259,7 @@ services:
         condition: service_healthy
       user-service-1:
         condition: service_started
-      catalog-service:
+      catalog-service-1:
         condition: service_started
     networks:
       - course-network

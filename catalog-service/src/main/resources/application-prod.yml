@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT:8082}
+
 spring:
   application:
     name: catalog-service
@@ -26,7 +29,7 @@ spring:
 
 logging:
   level:
-    com.zjgsu.catalogservice: INFO
+    com.zjgsu.pjt.catalog: INFO
     org.springframework.web: INFO
 
 management:
