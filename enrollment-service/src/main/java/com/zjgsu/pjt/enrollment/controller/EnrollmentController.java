@@ -16,7 +16,7 @@ import java.util.List;
  * 选课管理API（RESTful）
  */
 @RestController
-@RequestMapping("/api/enrollments")
+@RequestMapping("/enrollments")
 @RequiredArgsConstructor
 @Tag(name = "选课管理模块", description = "提供学生选课、退课及选课记录查询等操作")
 public class EnrollmentController {

@@ -17,7 +17,7 @@ import org.springframework.core.env.Environment;
  * 学生管理API（RESTful）
  */
 @RestController
-@RequestMapping("/api/students")
+@RequestMapping("/students")
 @RequiredArgsConstructor
 @Tag(name = "学生管理模块", description = "提供学生的创建、查询、更新、删除等操作，含学号唯一校验、邮箱格式校验")
 public class StudentController {

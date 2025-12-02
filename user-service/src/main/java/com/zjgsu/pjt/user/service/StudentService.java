@@ -18,6 +18,15 @@ import java.util.List;
 public class StudentService {
     private final StudentRepository studentRepository;
 
+
+    /**
+     * 按姓名查询学生
+     */
+    public Student getStudentByUsername(String username) {
+        return studentRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("学生不存在：姓名=" + username, HttpStatus.NOT_FOUND));
+    }
+
 //    获取所有学生列表
 
     public List<Student> getAllStudents() {

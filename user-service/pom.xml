@@ -37,6 +37,27 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- 在 user-service/pom.xml 的 <dependencies> 标签内添加 -->
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version> <!-- 建议使用较新的稳定版本 -->
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId> <!-- 如果你使用Jackson进行JSON序列化 -->
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+
         <!-- 核心Web依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

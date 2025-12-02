@@ -44,12 +44,13 @@ services:
     networks:
       - course-network
     healthcheck:
- #     test: ["CMD-SHELL", "curl -f \"http://localhost:8848/nacos/v1/console/health/liveness?accessToken=$${NACOS_AUTH_TOKEN}\""]
+      #     test: ["CMD-SHELL", "curl -f \"http://localhost:8848/nacos/v1/console/health/liveness?accessToken=$${NACOS_AUTH_TOKEN}\""]
       test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 120s
+
 
   # 用户数据库
   user-db:
@@ -112,7 +113,7 @@ services:
       DB_PASSWORD: catalog_pass
       SERVER_PORT: 8082 # 容器内端口固定
     ports:
-      - "8090:8082"
+      - "8093:8082"
     depends_on:
       catalog-db:
         condition: service_healthy
@@ -168,6 +169,33 @@ services:
       - course-network
     restart: unless-stopped
 
+  # API 网关
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8090:8090" # 暴露网关端口
+    environment:
+      # 网关也需要知道Nacos在哪里
+      JWT_SECRET: "ThisIsMySuperLongAndExtremelySecureSecretKeyForHS512AlgorithmAtLeast64Chars"
+      JWT_EXPIRATION: 86400000
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    depends_on:
+      nacos:
+        condition: service_healthy
+      user-service-1:
+        condition: service_started
+      catalog-service-1:
+        condition: service_started
+      enrollment-service:
+        condition: service_started
+    networks:
+      - course-network
+    restart: unless-stopped
+
   # 用户服务
   user-service-1:
     build:
@@ -175,6 +203,8 @@ services:
       dockerfile: Dockerfile
     container_name: user-service-1
     environment:
+      JWT_SECRET: "ThisIsMySuperLongAndExtremelySecureSecretKeyForHS512AlgorithmAtLeast64Chars"
+      JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USERNAME: user_user
@@ -198,7 +228,9 @@ services:
       dockerfile: Dockerfile
     container_name: user-service-2
     environment:
+      JWT_SECRET: "ThisIsMySuperLongAndExtremelySecureSecretKeyForHS512AlgorithmAtLeast64Chars"
       SPRING_PROFILES_ACTIVE: prod
+      JWT_EXPIRATION: 86400000
       DB_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USERNAME: user_user
       DB_PASSWORD: user_pass
@@ -221,6 +253,8 @@ services:
       dockerfile: Dockerfile
     container_name: user-service-3
     environment:
+      JWT_SECRET: "ThisIsMySuperLongAndExtremelySecureSecretKeyForHS512AlgorithmAtLeast64Chars"
+      JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USERNAME: user_user

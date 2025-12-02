@@ -15,6 +15,10 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     // 按学号查询（唯一）
     Optional<Student> findByStudentId(String studentId);
 
+    // 这个方法现在会从 users 表中查找 user_type='STUDENT' 并且 username 匹配的记录
+    Optional<Student> findByUsername(String username);
+
+
     // 按邮箱查询（唯一）
     Optional<Student> findByEmail(String email);
 

@@ -18,7 +18,7 @@ import java.util.Optional; // <-- 1. 添加必要的 import
  * 课程管理API（RESTful）
  */
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/courses")
 @RequiredArgsConstructor
 @Tag(name = "课程管理模块", description = "提供课程的创建、查询、更新、删除等操作")
 public class CourseController {
